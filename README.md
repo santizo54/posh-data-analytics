@@ -1,4 +1,4 @@
-# posh-data-analysis
+# Poshmark Sales Report Analysis
 
 The project investigated sales data between December 2015 to December 2019 from a boutique seller on Poshmark.
 
