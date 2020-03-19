@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
-# Importing necessary library
+######## Importing necessary library ##################
+
 from messytables import CSVTableSet, headers_guess
 import pandas as pd
+from pandas.api.types import CategoricalDtype
 import numpy as np
 from IPython.display import display
 from nltk.tokenize import word_tokenize
@@ -18,6 +20,14 @@ from sklearn.metrics import confusion_matrix, classification_report
 from sklearn.metrics import roc_curve
 from sklearn.metrics import accuracy_score
 
+#######################################################
+
+
+
+
+########### Load in the data ##################
+
+
 fh = open('sales_activity_report.csv', 'rb')
 
 # Load a file object:
@@ -32,6 +42,13 @@ offset, headers = headers_guess(row_set.sample)
 # import the table of values from the summary report into a Pandas dataframe
 df = pd.read_csv('sales_activity_report.csv', header = offset-1, skipfooter=2, engine='python')
 em = pd.read_csv('emojis.csv')
+
+################################################
+
+
+
+
+################ Data transformation/cleaning ##################
 
 # Remove the dollar sign from Order Price, Seller Shipping Discount, Upgraded Shipping Label Fee, Net Earnings, Sales Tax (Paid by Buyer)
 df['Order Price']=[x.strip('$') for x in df['Order Price']]
@@ -57,6 +74,13 @@ df['Order Date'] = pd.to_datetime(df['Order Date'])
 # Convert lowercase characters to uppercase characters for Buyer State
 
 df['Buyer State'] = df['Buyer State'].str.upper()
+
+################################################################
+
+
+
+
+#################### Data Analysis ###########################
 
 # Remove emoji from listing title
 char_list = em['emoji'].values.tolist()
@@ -177,10 +201,13 @@ plt.show(); del(chart, cats)
 # By week
 
 df2 = pd.concat([df['Brand'], df['Order Date'].dt.day_name()], axis=1)
+catsD = [ 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+cat_type_D = CategoricalDtype(categories=catsD, ordered=True)
+df2['Order Date'] = df2['Order Date'].astype(cat_type_D)
 brands_by_week = pd.DataFrame(df2.groupby(['Order Date', 'Brand']).size())
 brands_by_week.rename(columns={0:'count'}, inplace=True)
 g = brands_by_week['count'].groupby(level=0, group_keys=False)
-brands_by_week = pd.DataFrame(g.nlargest(5)); del(df2, g)
+brands_by_week = pd.DataFrame(g.nlargest(5)); del(df2, catsD, cat_type_D, g)
 
 sns.set(style="darkgrid", palette="deep")
 chart = brands_by_week.unstack().plot(kind='bar', stacked=True)
@@ -195,10 +222,14 @@ plt.show(); del(chart, handles, labels)
 # By month
 
 df3 = pd.concat([df['Brand'], df['Order Date'].dt.month_name()], axis=1)
+catsM = ['January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December']
+cat_type_M = CategoricalDtype(categories=catsM, ordered=True)
+df3['Order Date'] = df3['Order Date'].astype(cat_type_M)
 brands_by_month = pd.DataFrame(df3.groupby(['Order Date', 'Brand']).size())
 brands_by_month.rename(columns={0:'count'}, inplace=True)
 g = brands_by_month['count'].groupby(level=0, group_keys=False)
-brands_by_month = pd.DataFrame(g.nlargest(3)); del(df3, g)
+brands_by_month = pd.DataFrame(g.nlargest(3)); del(df3, catsM, cat_type_M, g)
 
 sns.set(style="darkgrid")
 chart = brands_by_month.unstack().plot(kind='bar', stacked=True)
@@ -216,10 +247,13 @@ plt.show(); del(chart, handles, labels)
 # By week
 
 df2 = pd.concat([df['Category'], df['Order Date'].dt.day_name()], axis=1)
+catsD = [ 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+cat_type_D = CategoricalDtype(categories=catsD, ordered=True)
+df2['Order Date'] = df2['Order Date'].astype(cat_type_D)
 categories_by_week = pd.DataFrame(df2.groupby(['Order Date', 'Category']).size())
 categories_by_week.rename(columns={0:'count'}, inplace=True)
 g = categories_by_week['count'].groupby(level=0, group_keys=False)
-categories_by_week = pd.DataFrame(g.nlargest(5)); del(g, df2)
+categories_by_week = pd.DataFrame(g.nlargest(5)); del(g, df2, catsD, cat_type_D)
 
 sns.set(style="darkgrid", palette="deep")
 chart = categories_by_week.unstack().plot(kind='bar', stacked=True)
@@ -234,10 +268,14 @@ plt.show(); del(chart, handles, labels)
 # By month
 
 df3 = pd.concat([df['Category'], df['Order Date'].dt.month_name()], axis=1)
+catsM = ['January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December']
+cat_type_M = CategoricalDtype(categories=catsM, ordered=True)
+df3['Order Date'] = df3['Order Date'].astype(cat_type_M)
 categories_by_month = pd.DataFrame(df3.groupby(['Order Date', 'Category']).size())
 categories_by_month.rename(columns={0:'count'}, inplace=True)
 g = categories_by_month['count'].groupby(level=0, group_keys=False)
-categories_by_month = pd.DataFrame(g.nlargest(5)); del(df3, g)
+categories_by_month = pd.DataFrame(g.nlargest(5)); del(df3, catsM, cat_type_M, g)
 
 sns.set(style="darkgrid")
 chart = categories_by_month.unstack().plot(kind='bar', stacked=True)
@@ -249,6 +287,11 @@ plt.gca().legend(loc='center left', bbox_to_anchor=(1, 0.5), labels=[i.strip("()
 chart.set_xticklabels(chart.get_xticklabels(), rotation=30)
 plt.show(); del(chart, handles, labels)
 
+############################################################
+
+
+
+################## Predictive Analysis ##########################
 
 # Building a logistic regression model
 
@@ -323,7 +366,7 @@ plt.show()
 accuracy = accuracy_score(y_test_enc, y_pred)
 print('Accuracy: %.2f' % (accuracy*100))
 
-
+##################################################################
 
 
 
