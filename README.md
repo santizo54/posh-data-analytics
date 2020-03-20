@@ -13,4 +13,4 @@ The seller in this analysis had two main propositions:
 ## Highlight
 
 * A logistic regression is used to classify whether a merchandise will receive an offer based key features such as the item's brand, order price, and purchasing location based on the seller's domestic state.
-* Classified merchandises that will receive offers from buyers with 81% accuracy
+* Classified merchandises that will receive offers from buyers with **81% accuracy**.
